@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: portfolio-tracker
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/portfolio_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: qwerty1234 # <-- Change this to your actual MySQL local password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      # 'update' tells Hibernate to create/update tables automatically based on our @Entity classes.
+      # For production, we would use 'validate' and a tool like Flyway or Liquibase.
+      ddl-auto: update
+    show-sql: true # Prints the SQL queries to your console so you can see the magic happening
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+server:
+  port: 8080 # The backend will run on port 8080, your Vue app is likely on 5173
