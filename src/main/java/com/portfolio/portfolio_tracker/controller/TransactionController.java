@@ -41,4 +41,14 @@ public class TransactionController {
         List<TransactionResponseDTO> history = transactionService.getTransactionsByTicker(accountId, ticker);
         return ResponseEntity.ok(history);
     }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteTransaction(@PathVariable Long id) {
+        transactionService.deleteTransaction(id);
+        return ResponseEntity.ok("Transaction deleted successfully");
+    }
+    @PutMapping("/{id}")
+    public ResponseEntity<String> updateTransaction(@PathVariable Long id, @RequestBody TransactionRequestDTO request) {
+        transactionService.updateTransaction(id, request);
+        return ResponseEntity.ok("Transaction updated successfully");
+    }
 }

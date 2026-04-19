@@ -156,17 +156,46 @@ public class TransactionService {
                         .build())
                 .toList();
     }
-//    public List<TransactionResponseDTO> getTransactionsByTicker(Long accountId, String ticker) {
-//        List<Transaction> transactions = transactionRepository
-//                .findByAccountIdAndAssetTickerOrderByDateDesc(accountId, ticker);
-//
-//        return transactions.stream().map(tx -> TransactionResponseDTO.builder()
-//                .id(tx.getId())
-//                .actionId(tx.getActionId().name())
-//                .date(tx.getDate())
-//                .quantity(tx.getQuantity())
-//                .price(tx.getPrice())
-//                .build()
-//        ).toList();
-//    }
+    public List<TransactionResponseDTO> getTransactionsByTicker(Long accountId, String ticker) {
+        List<Transaction> transactions = transactionRepository
+                .findByAccountIdAndAssetTickerOrderByTransactionDateDesc(accountId, ticker);
+
+        return transactions.stream().map(tx -> TransactionResponseDTO.builder()
+                .id(tx.getId())
+                .actionId(tx.getActionType().name())
+                .date(tx.getTransactionDate())
+                .quantity(tx.getQuantity())
+                .price(tx.getPricePerUnit())
+                .build()
+        ).toList();
+    }
+    @Transactional
+    public void deleteTransaction(Long transactionId) {
+        // TODO Phase 2: If deleting a BUY, we need to revert the tax lot allocations.
+        // For now, we just delete the ledger entry.
+        transactionRepository.deleteById(transactionId);
+    }
+    @Transactional
+    public void updateTransaction(Long id, TransactionRequestDTO request) {
+        if ("fds".equalsIgnoreCase(request.getSegment())) {
+            FixedDeposit fd = fixedDepositRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("FD not found"));
+
+            fd.setBankName(request.getBankName());
+            fd.setPrincipalAmount(request.getPrincipalAmount());
+            fd.setInterestRate(request.getInterestRate());
+            fd.setStartDate(request.getDate());
+            fd.setMaturityDate(request.getMaturityDate());
+            fixedDepositRepository.save(fd);
+        } else {
+            Transaction tx = transactionRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Transaction not found"));
+
+            tx.setActionType(ActionType.valueOf(request.getActionId().toUpperCase()));
+            tx.setTransactionDate(request.getDate());
+            tx.setQuantity(request.getQuantity());
+            tx.setPricePerUnit(request.getPrice());
+            transactionRepository.save(tx);
+        }
+    }
 }
