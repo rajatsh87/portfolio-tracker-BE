@@ -15,6 +15,9 @@ public class AssetCatalog {
     @Column(unique = true)
     private String ticker;
 
+    @Column
+    private String exchange;
+
     @Column(nullable = false)
     private String name;
 
@@ -24,4 +27,10 @@ public class AssetCatalog {
 
     @Column(nullable = false, length = 3)
     private String currency = "INR";
+
+    @Column
+    private String region;
+
+    @Column(name = "source", length = 50)
+    private String source;
 }

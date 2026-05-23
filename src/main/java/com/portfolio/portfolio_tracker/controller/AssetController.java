@@ -17,7 +17,7 @@ public class AssetController {
     private final AssetService assetService;
 
     @GetMapping("/search")
-    public ResponseEntity<List<AssetDTO>> searchAssets(@RequestParam String query) {
-        return ResponseEntity.ok(assetService.searchAssets(query));
+    public ResponseEntity<List<AssetDTO>> searchAssets(@RequestParam String query, @RequestParam String segment) {
+        return ResponseEntity.ok(assetService.searchAssets(query, segment));
     }
 }
