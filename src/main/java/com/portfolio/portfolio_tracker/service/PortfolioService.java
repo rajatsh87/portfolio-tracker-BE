@@ -3,9 +3,11 @@ package com.portfolio.portfolio_tracker.service;
 import com.portfolio.portfolio_tracker.dto.HoldingDTO;
 import com.portfolio.portfolio_tracker.entity.AssetCatalog;
 import com.portfolio.portfolio_tracker.entity.FixedDeposit;
+import com.portfolio.portfolio_tracker.entity.Price;
 import com.portfolio.portfolio_tracker.entity.Transaction;
 import com.portfolio.portfolio_tracker.entity.enums.ActionType;
 import com.portfolio.portfolio_tracker.repository.FixedDepositRepository;
+import com.portfolio.portfolio_tracker.repository.PriceRepository;
 import com.portfolio.portfolio_tracker.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,6 +28,7 @@ public class PortfolioService {
 
     private final TransactionRepository transactionRepository;
     private final FixedDepositRepository fixedDepositRepository;
+    private final PriceRepository priceRepository;
 
     public List<HoldingDTO> getPortfolioHoldings(Long accountId) {
         List<HoldingDTO> portfolio = new ArrayList<>();
@@ -35,6 +39,10 @@ public class PortfolioService {
         // Group transactions by Asset
         Map<AssetCatalog, List<Transaction>> transactionsByAsset = allTransactions.stream()
                 .collect(Collectors.groupingBy(Transaction::getAsset));
+
+        Set<String> allSymbols = transactionsByAsset.keySet().stream().map(AssetCatalog::getTicker).collect(Collectors.toSet());
+        List<Price> latestPricesForTickers = priceRepository.findLatestPricesForTickers(allSymbols);
+        Map<String,Price> priceMap = latestPricesForTickers.stream().collect(Collectors.toMap(Price::getTicker,price -> price));
 
         for (Map.Entry<AssetCatalog, List<Transaction>> entry : transactionsByAsset.entrySet()) {
             AssetCatalog asset = entry.getKey();
@@ -67,9 +75,6 @@ public class PortfolioService {
             if (currentQuantity.compareTo(BigDecimal.ZERO) > 0) {
                 BigDecimal avgBuyPrice = totalInvestedCost.divide(currentQuantity, 4, RoundingMode.HALF_UP);
 
-                // Mock live price based on avg buy price for MVP (we will connect a real API later)
-                BigDecimal mockCurrentPrice = avgBuyPrice.multiply(new BigDecimal("1.05"));
-
                 portfolio.add(HoldingDTO.builder()
                         .id(asset.getId())
                         .segment(asset.getSegment().name().toLowerCase().replace("_", "-"))
@@ -78,8 +83,8 @@ public class PortfolioService {
                         .name(asset.getName())
                         .quantity(currentQuantity)
                         .avgBuyPrice(avgBuyPrice)
-                        .currentPrice(mockCurrentPrice)
-                        .daysChangePct(new BigDecimal("1.25")) // Mock daily change
+                        .currentPrice(priceMap.get(asset.getTicker()).getClosePrice())
+                        .daysChangePct(priceMap.get(asset.getTicker()).getChangePercentage()) // Mock daily change
                         .build());
             }
         }
