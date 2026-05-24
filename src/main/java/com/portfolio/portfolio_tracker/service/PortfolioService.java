@@ -42,7 +42,7 @@ public class PortfolioService {
 
         Set<String> allSymbols = transactionsByAsset.keySet().stream().map(AssetCatalog::getTicker).collect(Collectors.toSet());
         List<Price> latestPricesForTickers = priceRepository.findLatestPricesForTickers(allSymbols);
-        Map<String,Price> priceMap = latestPricesForTickers.stream().collect(Collectors.toMap(Price::getTicker,price -> price));
+        Map<String, Price> priceMap = latestPricesForTickers.stream().collect(Collectors.toMap(Price::getTicker, price -> price));
 
         for (Map.Entry<AssetCatalog, List<Transaction>> entry : transactionsByAsset.entrySet()) {
             AssetCatalog asset = entry.getKey();
@@ -53,6 +53,7 @@ public class PortfolioService {
 
             BigDecimal currentQuantity = BigDecimal.ZERO;
             BigDecimal totalInvestedCost = BigDecimal.ZERO;
+            BigDecimal profitLoss = BigDecimal.ZERO;
 
             for (Transaction txn : txns) {
                 if (txn.getActionType() == ActionType.BUY) {
@@ -74,8 +75,9 @@ public class PortfolioService {
             // Only add to holdings if the user still owns shares (quantity > 0)
             if (currentQuantity.compareTo(BigDecimal.ZERO) > 0) {
                 BigDecimal avgBuyPrice = totalInvestedCost.divide(currentQuantity, 4, RoundingMode.HALF_UP);
+                BigDecimal currentPrice = priceMap.get(asset.getTicker()).getClosePrice();
 
-                portfolio.add(HoldingDTO.builder()
+                HoldingDTO holdingDTO = HoldingDTO.builder()
                         .id(asset.getId())
                         .segment(asset.getSegment().name().toLowerCase().replace("_", "-"))
                         .currency(asset.getCurrency())
@@ -83,9 +85,14 @@ public class PortfolioService {
                         .name(asset.getName())
                         .quantity(currentQuantity)
                         .avgBuyPrice(avgBuyPrice)
-                        .currentPrice(priceMap.get(asset.getTicker()).getClosePrice())
-                        .daysChangePct(priceMap.get(asset.getTicker()).getChangePercentage()) // Mock daily change
-                        .build());
+                        .currentPrice(currentPrice)
+                        .daysChange(priceMap.get(asset.getTicker()).getPriceChange())
+                        .daysChangePct(priceMap.get(asset.getTicker()).getChangePercentage())
+                        .investedAmt(totalInvestedCost)
+                        .build();
+                populatePAndL(holdingDTO);
+                portfolio.add(holdingDTO);
+
             }
         }
 
@@ -105,12 +112,25 @@ public class PortfolioService {
                     .maturityDate(fd.getMaturityDate().toString())
                     .daysRemaining(daysRemaining)
                     .maturityAmount(getMaturityAmount(fd))
+                    .investmentDate(fd.getStartDate())
                     .build());
         }
 
         return portfolio;
     }
-    BigDecimal getMaturityAmount(FixedDeposit fd){
+
+    void populatePAndL(HoldingDTO holdingDTO) {
+        BigDecimal currentValue = holdingDTO.getCurrentPrice().multiply(holdingDTO.getQuantity());
+        BigDecimal profitOrLoss = currentValue.subtract(holdingDTO.getInvestedAmt());
+        BigDecimal profitOrLossPrct = profitOrLoss.divide(holdingDTO.getInvestedAmt(), 4, RoundingMode.HALF_UP)
+                .multiply(new BigDecimal("100"));
+        holdingDTO.setCurrentVal(currentValue);
+        holdingDTO.setProfitLoss(profitOrLoss);
+        holdingDTO.setProfitLossPct(profitOrLossPrct);
+
+    }
+
+    BigDecimal getMaturityAmount(FixedDeposit fd) {
         long totalDays = ChronoUnit.DAYS.between(fd.getStartDate(), fd.getMaturityDate());
         double years = totalDays / 365.0;
         double rateDecimal = fd.getInterestRate().doubleValue() / 100.0;
