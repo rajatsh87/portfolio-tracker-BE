@@ -3,13 +3,18 @@ package com.portfolio.portfolio_tracker.entity;
 import com.portfolio.portfolio_tracker.entity.enums.FDStatus;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "fixed_deposits")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class FixedDeposit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,6 +41,12 @@ public class FixedDeposit {
 
     @Column(name = "maturity_date", nullable = false)
     private LocalDate maturityDate;
+
+    @Column(name = "maturity_amount", nullable = false)
+    private BigDecimal maturityAmount;
+
+    @Column(name = "interest_amount", nullable = false)
+    private BigDecimal interestAmount;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

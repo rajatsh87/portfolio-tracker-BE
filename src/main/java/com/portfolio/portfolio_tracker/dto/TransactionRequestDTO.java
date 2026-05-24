@@ -1,6 +1,7 @@
 package com.portfolio.portfolio_tracker.dto;
 
 import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -22,4 +23,6 @@ public class TransactionRequestDTO {
     private BigDecimal principalAmount;
     private BigDecimal interestRate;
     private LocalDate maturityDate;
+    private BigDecimal maturityAmount;
+    private String fdNumber;
 }

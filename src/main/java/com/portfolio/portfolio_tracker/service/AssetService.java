@@ -88,14 +88,14 @@ public class AssetService {
         if (currency == null) return null;
         String typeLower = currency.toLowerCase();
 
-        if (!"inr".equals(typeLower)){
+        if (!"inr".equals(typeLower)) {
             return Segment.FOREIGN_EQUITY;
         }
 
         if (typeLower.contains("mutual fund")) {
             return Segment.MUTUAL_FUND;
         }
-        if (typeLower.contains("etf")){
+        if (typeLower.contains("etf")) {
             return Segment.ETF;
         }
         return Segment.EQUITY;

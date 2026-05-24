@@ -13,5 +13,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     // Fetch transactions for a specific asset within an account (used for Avg Buy Price calculation)
     List<Transaction> findByAccountIdAndAssetIdOrderByTransactionDateAsc(Long accountId, Long assetId);
+
     List<Transaction> findByAccountIdAndAssetTickerOrderByTransactionDateDesc(Long accountId, String ticker);
 }

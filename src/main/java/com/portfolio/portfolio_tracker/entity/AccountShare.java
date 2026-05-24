@@ -4,11 +4,15 @@ import com.portfolio.portfolio_tracker.entity.enums.PermissionLevel;
 import com.portfolio.portfolio_tracker.entity.enums.ShareStatus;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "account_shares")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class AccountShare {
     @Id

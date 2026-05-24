@@ -6,7 +6,11 @@ import lombok.*;
 
 @Entity
 @Table(name = "assets_catalog")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class AssetCatalog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

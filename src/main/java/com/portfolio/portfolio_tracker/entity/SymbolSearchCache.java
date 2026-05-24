@@ -2,11 +2,16 @@ package com.portfolio.portfolio_tracker.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "symbol_search_cache")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class SymbolSearchCache {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

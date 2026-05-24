@@ -76,10 +76,19 @@ public class TransactionService {
                 .interestRate(request.getInterestRate())
                 .startDate(request.getDate())
                 .maturityDate(request.getMaturityDate())
+                .maturityAmount(request.getMaturityAmount())
                 .status(com.portfolio.portfolio_tracker.entity.enums.FDStatus.ACTIVE)
+                .maturityAmount(request.getMaturityAmount())
+                .accountNumber(request.getFdNumber())
                 .build();
-
+        calulateInterest(fd);
         fixedDepositRepository.save(fd);
+    }
+
+    private void calulateInterest(FixedDeposit fd) {
+        BigDecimal principalAmt = fd.getPrincipalAmount();
+        BigDecimal maturityAmt = fd.getMaturityAmount();
+        fd.setInterestAmount(maturityAmt.subtract(principalAmt));
     }
 
     /**
@@ -141,6 +150,7 @@ public class TransactionService {
             throw new RuntimeException("Insufficient holding quantity to execute this sell transaction.");
         }
     }
+
     public List<TransactionHistoryDTO> getTransactionHistory(Long accountId) {
         return transactionRepository.findByAccountId(accountId).stream()
                 .sorted((t1, t2) -> t2.getTransactionDate().compareTo(t1.getTransactionDate())) // Newest first
@@ -156,6 +166,7 @@ public class TransactionService {
                         .build())
                 .toList();
     }
+
     public List<TransactionResponseDTO> getTransactionsByTicker(Long accountId, String ticker) {
         List<Transaction> transactions = transactionRepository
                 .findByAccountIdAndAssetTickerOrderByTransactionDateDesc(accountId, ticker);
@@ -169,12 +180,18 @@ public class TransactionService {
                 .build()
         ).toList();
     }
+
     @Transactional
-    public void deleteTransaction(Long transactionId) {
+    public void deleteTransaction(Long transactionId, String segment) {
         // TODO Phase 2: If deleting a BUY, we need to revert the tax lot allocations.
         // For now, we just delete the ledger entry.
-        transactionRepository.deleteById(transactionId);
+        if ("fds".equals(segment)) {
+            fixedDepositRepository.deleteById(transactionId);
+        } else {
+            transactionRepository.deleteById(transactionId);
+        }
     }
+
     @Transactional
     public void updateTransaction(Long id, TransactionRequestDTO request) {
         if ("fds".equalsIgnoreCase(request.getSegment())) {

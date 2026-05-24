@@ -3,12 +3,17 @@ package com.portfolio.portfolio_tracker.entity;
 import com.portfolio.portfolio_tracker.entity.enums.TaxClassification;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tax_lot_allocations")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class TaxLotAllocation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -2,6 +2,7 @@ package com.portfolio.portfolio_tracker.dto;
 
 import lombok.Builder;
 import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -34,4 +35,5 @@ public class HoldingDTO {
     private String maturityDate;
     private BigDecimal maturityAmount;
     private Long daysRemaining;
+    private String fdNumber;
 }

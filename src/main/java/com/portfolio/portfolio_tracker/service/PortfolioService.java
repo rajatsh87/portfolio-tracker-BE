@@ -75,7 +75,7 @@ public class PortfolioService {
             // Only add to holdings if the user still owns shares (quantity > 0)
             if (currentQuantity.compareTo(BigDecimal.ZERO) > 0) {
                 BigDecimal avgBuyPrice = totalInvestedCost.divide(currentQuantity, 4, RoundingMode.HALF_UP);
-                BigDecimal currentPrice = priceMap.get(asset.getTicker()).getClosePrice();
+                BigDecimal currentPrice = priceMap.getOrDefault(asset.getTicker(), new Price()).getClosePrice();
 
                 HoldingDTO holdingDTO = HoldingDTO.builder()
                         .id(asset.getId())
@@ -113,6 +113,7 @@ public class PortfolioService {
                     .daysRemaining(daysRemaining)
                     .maturityAmount(getMaturityAmount(fd))
                     .investmentDate(fd.getStartDate())
+                    .fdNumber(fd.getAccountNumber())
                     .build());
         }
 
